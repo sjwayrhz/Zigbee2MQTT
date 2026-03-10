@@ -1,0 +1,17 @@
+homeassistant:
+  enabled: true
+mqtt:
+  base_topic: zigbee2mqtt
+  server: mqtt://mqtt
+serial:
+  port: /dev/ttyUSB0
+  adapter: zstack
+frontend:
+  enabled: true
+  port: 8080
+advanced:
+  cache_state: true
+version: 4
+devices:
+  '0x00158d008c7e8ab3':
+    friendly_name: '0x00158d008c7e8ab3'

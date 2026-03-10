@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+
+  # 1. MQTT Broker
+  mqtt:
+    image: eclipse-mosquitto:latest
+    container_name: mosquitto
+    restart: unless-stopped
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+    ports:
+      - "1883:1883"
+
+  # 2. Zigbee2MQTT
+  zigbee2mqtt:
+    container_name: zigbee2mqtt
+    image: koenkk/zigbee2mqtt:latest
+    restart: unless-stopped
+    depends_on:
+      - mqtt
+    volumes:
+      - ./zigbee2mqtt-data:/app/data
+      - /run/udev:/run/udev:ro
+    ports:
+      - "8080:8080"
+    devices:
+      - /dev/serial/by-id/usb-1a86_USB_Serial-if00-port0:/dev/ttyUSB0
+    environment:
+      - TZ=Asia/Shanghai
+
+  # 3. Node-RED - 替代 Telegraf，负责 MQTT 缓存 + 定时推送 Pushgateway
+  nodered:
+    image: nodered/node-red:latest
+    container_name: nodered
+    restart: unless-stopped
+    user: "1000:1000"
+    depends_on:
+      - mqtt
+    ports:
+      - "1880:1880"
+    volumes:
+      - ./nodered-data:/data
+    environment:
+      - TZ=Asia/Shanghai
